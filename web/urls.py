@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from  user.views import *
+import booking.views as book
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ping/', ping),
@@ -23,4 +24,19 @@ urlpatterns = [
     path('user/register/', register),
     path('user/change_passwd/', change_passwd),
     path('user/logout/', logout),
+    path('manage/get_admin/', book.get_admin),
+    path('manage/add_facility_type/', book.add_facility_type),
+    path('manage/add_office_location/', book.add_office_location),
+    path('manage/get_office/', book.get_office),
+    path('manage/get_facility_type/', book.get_facility_type),
+    path('manage/add_facility/', book.add_facility),
+    path('manage/get_facility/', book.get_facility),
+    path('manage/get_reserve_price/', book.get_reserve_price),
+    path('manage/get_day_ava/', book.get_day_ava),
+    path('manage/get_hour_ava/', book.get_hour_ava),
+    path('manage/add_plan/', book.add_plan),
+    path('manage/get_plan/', book.get_plan),
+    path('manage/buy_plan/', book.buy_plan),
+    path('manage/get_member_plan/', book.get_member_plan),
+    path('manage/add_reserve/', book.add_reserve),
 ]

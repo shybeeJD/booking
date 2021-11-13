@@ -111,9 +111,21 @@ def update_user_info(request):
         )
 
 
-        return JsonResponse({'status':'success','user':model_to_dict(user)})
+        return JsonResponse({'status':'success'})
     except Exception as e:
         print(e)
 
         return JsonResponse({'status': 'failed'})
 
+def get_user_by_Id(request):
+    isadmin = request.session.get('admin')
+    userId = request.GET.get('userId')
+
+    user_now = request.session.get('userId')
+    if not isadmin and str(user_now) != str(userId):
+        return JsonResponse({'status': 'failed, no access'})
+    try:
+        user = Member.objects.get(userId=userId)
+        return JsonResponse({'status': 'success', 'user': model_to_dict(user)})
+    except:
+        return JsonResponse({'status': 'failed'})

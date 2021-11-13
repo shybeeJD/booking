@@ -184,7 +184,7 @@ def buy_plan(request):
     print(num)
     isadmin = request.session.get('admin')
     user_now = request.session.get('userId')
-    if not isadmin and user_now != userId:
+    if not isadmin and str(user_now) != str(userId):
         return JsonResponse({'status': 'failed, no access'})
     try:
         operater = Member.objects.get(userId=operater_id,admin=True)
@@ -205,7 +205,7 @@ def get_member_plan(request):
     userId  = request.session.get('userId')
     isadmin = request.session.get('admin')
     user_now = request.session.get('userId')
-    if not isadmin and user_now != userId:
+    if not isadmin and str(user_now) != str(userId):
         return JsonResponse({'status': 'failed, no access'})
     res = member_plan.objects.filter(userId=userId)
     data = []
@@ -228,7 +228,7 @@ def add_reserve(request):
     print(hours,days)
     isadmin = request.session.get('admin')
     user_now = request.session.get('userId')
-    if not isadmin and user_now != userId:
+    if not isadmin and str(user_now) != str(userId):
         return JsonResponse({'status': 'failed, no access'})
     try:
         operater= Member.objects.get(userId=operater_id)
@@ -567,7 +567,7 @@ def get_user_reserve(request):
     userId = request.GET.get('userId')
     isadmin = request.session.get('admin')
     user_now = request.session.get('userId')
-    if not isadmin and user_now != userId:
+    if not isadmin and str(user_now) != str(userId):
         return JsonResponse({'status': 'failed, no access'})
     res = facility_reservering.objects.filter(userId=userId)
     data = []
@@ -583,7 +583,7 @@ def cancel_reserve(request):
     id = request.session.get('id')
 
     user_now = request.session.get('userId')
-    if not isadmin and user_now!=userId:
+    if not isadmin and str(user_now)!=str(userId):
         return JsonResponse({'status': 'failed, no access'})
 
 

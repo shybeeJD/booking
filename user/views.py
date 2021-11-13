@@ -1,16 +1,17 @@
 from django.shortcuts import render
 
 # Create your views here.
-from user.models import Member
+from user.models import Member,sex_choice
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import random
 import hashlib
+from user.models import sex_choice
 from django.conf import settings
+from django.forms.models import model_to_dict
 def ping(request):
 
     return JsonResponse({'res':'pong'})
-
 
 
 def login(request):
@@ -28,12 +29,14 @@ def login(request):
 
         request.session['userId']=res[0].userId
         request.session['jessionId']=jessionId
-        resp=JsonResponse({'status':'success'})
+        request.session['admin'] = res[0].admin
+        resp=JsonResponse({'status':'success','user':model_to_dict(res[0])})
         return resp
-    return JsonResponse({'status': 'failed'})
+    resp = JsonResponse({'status': 'failed'})
+    return resp
+
 
 def register(request):
-
     passwd = request.POST.get('passwd')
     userName = request.POST.get('userName')
     firstName = request.POST.get('firstName')
@@ -79,3 +82,38 @@ def logout(request):
     except:
         pass
     return JsonResponse({'status':'success'})
+
+def get_user_info(request):
+    userId = request.session.get('userId')
+    try:
+        user = Member.objects.get(userId=userId)
+        return JsonResponse({'status':'success','user':model_to_dict(user)})
+    except:
+        return JsonResponse({'status': 'failed'})
+
+def update_user_info(request):
+
+    userName = request.POST.get('userName')
+    firstName = request.POST.get('firstName')
+    lastName = request.POST.get('lastName')
+    gender = request.POST.get('gender')
+    tel = request.POST.get('tel')
+    address =request.POST.get('address')
+    userId = request.session.get('userId')
+    try:
+        user = Member.objects.filter(userId=userId).update(
+            userName = userName,
+            firstName=firstName,
+            lastName=lastName,
+            gender=dict((key,value) for (value,key) in sex_choice)[gender],
+            tel=tel,
+            address=address,
+        )
+
+
+        return JsonResponse({'status':'success','user':model_to_dict(user)})
+    except Exception as e:
+        print(e)
+
+        return JsonResponse({'status': 'failed'})
+

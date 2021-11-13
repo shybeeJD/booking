@@ -6,6 +6,8 @@ from user.models import Member
 from django.http import HttpResponse, JsonResponse
 from django.forms.models import model_to_dict
 import datetime
+from user.models import Member
+import json
 def last_day_of_month(any_day):
     """
     获取获得一个月中的最后一天
@@ -83,6 +85,8 @@ def get_admin(request):
     return JsonResponse({'admin':admin})
 
 def get_office(request):
+    isadmin = request.session.get('admin')
+    print(isadmin)
     res = office_location.objects.all()
     data = []
     for i in res:
@@ -90,6 +94,7 @@ def get_office(request):
     return JsonResponse({'data': data})
 
 def get_facility_type(request):
+
     res = facility_type.objects.all()
     data = []
     for i in res:
@@ -97,7 +102,7 @@ def get_facility_type(request):
     return JsonResponse({'data': data})
 
 def get_facility(request):
-    center_ID=request.POST.get('center_ID')
+    center_ID=request.GET.get('center_ID')
     if center_ID:
 
         res = facility.objects.filter(
@@ -112,6 +117,10 @@ def get_facility(request):
 
 def add_facility(request):
     try:
+        isadmin = request.session.get('admin')
+        if not isadmin:
+            return JsonResponse({'status': 'failed'})
+            pass
         facility_id = request.POST.get('facility_id')
         number = request.POST.get('number')
         centerId = request.POST.get('centerId')
@@ -122,7 +131,6 @@ def add_facility(request):
             number=number,
             centerId=centerId,
             typeId=typeId,
-
         )
         new_facility.save()
         return JsonResponse({'status': 'success'})
@@ -135,7 +143,9 @@ def add_facility(request):
 
 def add_plan(request):
     try:
-        planId = request.POST.get('planId')
+        isadmin = request.session.get('admin')
+        if not isadmin:
+            return JsonResponse({'status': 'failed'})
         typeId = request.POST.get('typeId')
         unit = request.POST.get('unit')
         description = request.POST.get('description')
@@ -143,7 +153,6 @@ def add_plan(request):
         category = request.POST.get('category')
 
         new_plan=plan(
-            planId=planId,
             typeId=typeId,
             unit=unit,
             description=description,
@@ -167,13 +176,18 @@ def get_plan(request):
     return JsonResponse({'data': data})
 
 def buy_plan(request):
-    operater_id = request.POST.get('operater_id')
+    operater_id  = request.session.get('userId')
+
     planId = request.POST.get('planId')
     userId = request.POST.get('userId')
     num = request.POST.get('num')
     print(num)
+    isadmin = request.session.get('admin')
+    user_now = request.session.get('userId')
+    if not isadmin and user_now != userId:
+        return JsonResponse({'status': 'failed, no access'})
     try:
-        operater = Member.objects.get(userId=operater_id)
+        operater = Member.objects.get(userId=operater_id,admin=True)
     except:
         return JsonResponse({'status': 'failed, no such operater'})
     if operater.admin:
@@ -188,7 +202,11 @@ def buy_plan(request):
         return JsonResponse({'status': 'failed','message':'no auth'})
 
 def get_member_plan(request):
-    userId = request.GET.get('userId')
+    userId  = request.session.get('userId')
+    isadmin = request.session.get('admin')
+    user_now = request.session.get('userId')
+    if not isadmin and user_now != userId:
+        return JsonResponse({'status': 'failed, no access'})
     res = member_plan.objects.filter(userId=userId)
     data = []
     for i in res:
@@ -202,10 +220,16 @@ def add_reserve(request):
     unit = request.POST.get('unit')
     year = request.POST.get('year')
     month = request.POST.get('month')
-    days = request.POST.getlist('days',[])
-    hours =request.POST.getlist('hours',[])
+    days = request.POST.get('days')
+    hours =request.POST.get('hours')
+    days=json.loads(days)
+    hours=json.loads(hours)
     operater_id = request.POST.get('operater_id')
     print(hours,days)
+    isadmin = request.session.get('admin')
+    user_now = request.session.get('userId')
+    if not isadmin and user_now != userId:
+        return JsonResponse({'status': 'failed, no access'})
     try:
         operater= Member.objects.get(userId=operater_id)
         if operater.admin:
@@ -219,7 +243,8 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=days[0],
-                        hour=hour
+                        hour=hour,
+                        used =True
                     )
                     if len(exist)>0:
                         print('con1')
@@ -230,6 +255,7 @@ def add_reserve(request):
                         month=month,
                         unit=1,
                         day=days[0],
+                        used =True
                     )
                     if len(exist)>0:
                         print('con2')
@@ -240,6 +266,7 @@ def add_reserve(request):
                         month=month,
                         unit=2,
                         day=days[0],
+                        used=True,
                     )
                     if len(exist) > 0:
                         print('con2')
@@ -250,6 +277,7 @@ def add_reserve(request):
                         month=month,
                         unit=3,
                         day=days[0],
+                        used=True
                     )
                     if len(exist) > 0:
                         print('con2')
@@ -261,7 +289,8 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=days[0],
-                        hour=hour
+                        hour=hour,
+                        used=True
                     )
                     new_reserve.save()
                     res_hour.append(hour)
@@ -275,6 +304,7 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=day,
+                        used=True,
                     )
                     if len(exist) > 0:
                         continue
@@ -304,7 +334,8 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=days[0],
-                        hour=hour
+                        hour=hour,
+                        used =True
                     )
                     if len(exist) > 0:
                         print('con1')
@@ -315,6 +346,7 @@ def add_reserve(request):
                         month=month,
                         unit=1,
                         day=days[0],
+                        used=True,
                     )
                     if len(exist) > 0:
                         print('con2')
@@ -325,6 +357,7 @@ def add_reserve(request):
                         month=month,
                         unit=2,
                         day=days[0],
+                        used=True
                     )
                     if len(exist) > 0:
                         print('con2')
@@ -335,6 +368,7 @@ def add_reserve(request):
                         month=month,
                         unit=3,
                         day=days[0],
+                        used=True
                     )
                     if len(exist) > 0:
                         print('con2')
@@ -365,6 +399,7 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=day,
+                        used=True,
                     )
                     if len(exist) > 0:
                         continue
@@ -375,7 +410,7 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=day,
-                        hour=0
+                        hour=0,
                     )
                     new_reserve.save()
                     member_buy[i].used = True
@@ -395,6 +430,7 @@ def add_reserve(request):
                         year=year,
                         month=month,
                         day=day,
+                        used=True
                     )
                     if len(exist) > 0:
                         continue
@@ -427,20 +463,44 @@ def get_hour_ava(request):
     now = datetime.datetime.now()
     if not month:
         month = now.month
+    else:
+        month=int(month)
     if not year:
         year = now.year
+    else:
+        year=int(year)
     if not day:
         day=now.day
+    else:
+        day=int(day)
     facility_id = request.GET.get('facility_id')
     results = facility_reservering.objects.filter(
         year=year,
         month=month,
         day=day,
-        facility_id=facility_id
+        facility_id=facility_id,
+        used=True
     )
-    hours=[i for i in range(now.hour+1,24)]
+
+    hours=[i for i in range(0,24)]
+
+
+    if year==now.year and month==now.month and day==now.day:
+        print(now.hour,111111)
+        for i in range(0,now.hour):
+            try:
+                hours.remove(i)
+            except:
+                pass
     for result in results:
-        hours.remove(result.hour)
+        try:
+            if result.unit!=0:
+                hours=[]
+                break
+            hours.remove(result.hour)
+        except:
+            pass
+
     return JsonResponse({'status':'success',
                          'facility_id':facility_id,
                          'hours':hours})
@@ -453,17 +513,33 @@ def get_day_ava(request):
     now=datetime.datetime.now()
     if not month:
         month=now.month
+    else:
+        month=int(month)
     if not year:
         year=now.year
+    else:
+        year=int(year)
     results = facility_reservering.objects.filter(
         year=year,
         month=month,
-        facility_id=facility_id
+        facility_id=facility_id,
+        used= True
     )
     last_day=last_day_of_month(datetime.date(year,month,1)).day
     days = [i for i in range(1,int(last_day)+1)]
     for result in results:
-        days.remove(result.day)
+        try:
+            days.remove(result.day)
+        except:
+            pass
+    if year==now.year and month==now.month:
+        for i in range(1,now.day):
+            try:
+                days.remove(i)
+            except:
+                pass
+    if year<now.year or month<now.month:
+        days=[]
     return JsonResponse({'status': 'success',
                          'facility_id': facility_id,
                          'days': days})
@@ -486,3 +562,52 @@ def get_reserve_price(request):
         'month':res.month_price
     }
     return JsonResponse(resp)
+
+def get_user_reserve(request):
+    userId = request.GET.get('userId')
+    isadmin = request.session.get('admin')
+    user_now = request.session.get('userId')
+    if not isadmin and user_now != userId:
+        return JsonResponse({'status': 'failed, no access'})
+    res = facility_reservering.objects.filter(userId=userId)
+    data = []
+    for i in res:
+        data.append(model_to_dict(i))
+    return JsonResponse({'data': data})
+    pass
+
+def cancel_reserve(request):
+    userId = request.GET.get('userId')
+    facility_id = request.GET.get('facility_id')
+    isadmin = request.session.get('admin')
+    id = request.session.get('id')
+
+    user_now = request.session.get('userId')
+    if not isadmin and user_now!=userId:
+        return JsonResponse({'status': 'failed, no access'})
+
+
+    try:
+        exist = facility_reservering.objects.get(userId=int(userId),facility_id=facility_id,id=id)
+        exist.used=False
+        exist.save()
+        return JsonResponse({'status': 'success'})
+        pass
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': 'failed'})
+        pass
+    pass
+
+def get_all_users(request):
+
+    isadmin = request.session.get('admin')
+
+    if not isadmin :
+        return JsonResponse({'status': 'failed, no access'})
+    res = Member.objects.all()
+    data = []
+    for i in res:
+        data.append(model_to_dict(i))
+    return JsonResponse({'data': data})
+    pass

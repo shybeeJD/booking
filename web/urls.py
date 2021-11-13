@@ -39,4 +39,7 @@ urlpatterns = [
     path('manage/buy_plan/', book.buy_plan),
     path('manage/get_member_plan/', book.get_member_plan),
     path('manage/add_reserve/', book.add_reserve),
+    path('manage/update_user_info/', update_user_info),
+    path('manage/cancel_reserve/', book.cancel_reserve),
+    path('manage/get_all_users/', book.get_all_users),
 ]

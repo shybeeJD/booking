@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'booking',
-    'corsheaders',
+
 ]
 
 MIDDLEWARE = [
@@ -48,9 +49,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'user.AuthMD.AuthMD',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'user.AuthMD.AuthMD',
 ]
 
 ROOT_URLCONF = 'web.urls'
@@ -157,4 +158,7 @@ CORS_ALLOW_CREDENTIALS = True
 # 允许所有主机执行跨站点请求，默认为False
 # 如果没设置该参数，则必须设置白名单，运行部分白名单的主机才能执行跨站点请求
 CORS_ORIGIN_ALLOW_ALL = True
-
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

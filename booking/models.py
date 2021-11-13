@@ -75,6 +75,7 @@ class facility_reservering(models.Model):
     month=models.IntegerField()
     day = models.IntegerField()
     hour = models.IntegerField()
+    used = models.BooleanField(default=True)
     create_time=models.DateTimeField(auto_now_add=True)
 
 

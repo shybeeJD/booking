@@ -589,9 +589,12 @@ def cancel_reserve(request):
 
     try:
         exist = facility_reservering.objects.get(userId=int(userId),facility_id=facility_id,id=id)
-        exist.used=False
-        exist.save()
-        return JsonResponse({'status': 'success'})
+        if exist.unit==0 or exist.unit==1:
+            exist.used=False
+            exist.save()
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'failed'})
         pass
     except Exception as e:
         print(e)
@@ -611,3 +614,13 @@ def get_all_users(request):
         data.append(model_to_dict(i))
     return JsonResponse({'data': data})
     pass
+def get_all_user_reserve(request):
+    isadmin = request.session.get('admin')
+
+    if not isadmin:
+        return JsonResponse({'status': 'failed, no access'})
+    res = facility_reservering.objects.all()
+    data = []
+    for i in res:
+        data.append(model_to_dict(i))
+    return JsonResponse({'data': data})

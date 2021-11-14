@@ -176,30 +176,20 @@ def get_plan(request):
     return JsonResponse({'data': data})
 
 def buy_plan(request):
-    operater_id  = request.session.get('userId')
-
     planId = request.POST.get('planId')
     userId = request.POST.get('userId')
     num = request.POST.get('num')
     print(num)
     isadmin = request.session.get('admin')
-    user_now = request.session.get('userId')
-    if not isadmin and str(user_now) != str(userId):
+    if not isadmin:
         return JsonResponse({'status': 'failed, no access'})
-    try:
-        operater = Member.objects.get(userId=operater_id,admin=True)
-    except:
-        return JsonResponse({'status': 'failed, no such operater'})
-    if operater.admin:
-        for i in range(int(num)):
-            new_member_plan = member_plan(
-                planId=planId,
-                userId=userId
-            )
-            new_member_plan.save()
-            return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'status': 'failed','message':'no auth'})
+    for i in range(int(num)):
+        new_member_plan = member_plan(
+            planId=planId,
+            userId=userId
+        )
+        new_member_plan.save()
+    return JsonResponse({'status': 'success'})
 
 def get_member_plan(request):
     userId  = request.session.get('userId')
@@ -228,9 +218,10 @@ def add_reserve(request):
     print(hours,days)
     isadmin = request.session.get('admin')
     user_now = request.session.get('userId')
+    now = datetime.datetime.now()
     if not isadmin and str(user_now) != str(userId):
         return JsonResponse({'status': 'failed, no access'})
-    try:
+    if True:
         operater= Member.objects.get(userId=operater_id)
         if operater.admin:
             if unit == '0':
@@ -299,6 +290,9 @@ def add_reserve(request):
             else:
                 res_day = []
                 for day in days:
+                    if (day<now.day and month==now.month and year==now.year) \
+                            or (month<now.month and year==now.year) or year<now.year:
+                        continue
                     exist = facility_reservering.objects.filter(
                         facility_id=facility_id,
                         year=year,
@@ -320,7 +314,7 @@ def add_reserve(request):
                     res_day.append(day)
                     new_reserve.save()
                 return JsonResponse({'status': 'success', 'days': res_day})
-    except:
+
         print(unit=='0',1,days)
 
         if unit == '0':
@@ -394,6 +388,9 @@ def add_reserve(request):
             member_buy = member_plan.objects.filter(userId=userId, planId=plan_type.planId,used=False)
             if len(member_buy) >= len(hours):
                 for i,day in enumerate(days):
+                    if (day < now.day and month == now.month and year == now.year) \
+                            or (month < now.month and year == now.year) or year < now.year:
+                        continue
                     exist = facility_reservering.objects.filter(
                         facility_id=facility_id,
                         year=year,
@@ -425,6 +422,9 @@ def add_reserve(request):
             member_buy = member_plan.objects.filter(userId=userId, planId=plan_type.planId,used=False)
             if len(member_buy) >= 1:
                 for i,day in enumerate(days):
+                    if (day < now.day and month == now.month and year == now.year) \
+                            or (month < now.month and year == now.year) or year < now.year:
+                        continue
                     exist = facility_reservering.objects.filter(
                         facility_id=facility_id,
                         year=year,
@@ -580,7 +580,7 @@ def cancel_reserve(request):
     userId = request.GET.get('userId')
     facility_id = request.GET.get('facility_id')
     isadmin = request.session.get('admin')
-    id = request.session.get('id')
+    id = request.GET.get('id')
 
     user_now = request.session.get('userId')
     if not isadmin and str(user_now)!=str(userId):
@@ -588,7 +588,7 @@ def cancel_reserve(request):
 
 
     try:
-        exist = facility_reservering.objects.get(userId=int(userId),facility_id=facility_id,id=id)
+        exist = facility_reservering.objects.get(userId=int(userId),id=id)
         if exist.unit==0 or exist.unit==1:
             exist.used=False
             exist.save()

@@ -290,8 +290,8 @@ def add_reserve(request):
             else:
                 res_day = []
                 for day in days:
-                    if (day<now.day and month==now.month and year==now.year) \
-                            or (month<now.month and year==now.year) or year<now.year:
+                    if (day<str(now.day) and month==str(now.month) and year==str(now.year)) \
+                            or (month<str(now.month) and year==str(now.year)) or str(year<now.year):
                         continue
                     exist = facility_reservering.objects.filter(
                         facility_id=facility_id,
@@ -388,8 +388,8 @@ def add_reserve(request):
             member_buy = member_plan.objects.filter(userId=userId, planId=plan_type.planId,used=False)
             if len(member_buy) >= len(hours):
                 for i,day in enumerate(days):
-                    if (day < now.day and month == now.month and year == now.year) \
-                            or (month < now.month and year == now.year) or year < now.year:
+                    if (day < str(now.day) and month == str(now.month) and year == str(now.year)) \
+                            or (month < str(now.month) and year == str(now.year)) or str(year < now.year):
                         continue
                     exist = facility_reservering.objects.filter(
                         facility_id=facility_id,
@@ -422,8 +422,8 @@ def add_reserve(request):
             member_buy = member_plan.objects.filter(userId=userId, planId=plan_type.planId,used=False)
             if len(member_buy) >= 1:
                 for i,day in enumerate(days):
-                    if (day < now.day and month == now.month and year == now.year) \
-                            or (month < now.month and year == now.year) or year < now.year:
+                    if (day < str(now.day) and month == str(now.month) and year == str(now.year)) \
+                            or (month < str(now.month) and year == str(now.year)) or str(year < now.year):
                         continue
                     exist = facility_reservering.objects.filter(
                         facility_id=facility_id,
